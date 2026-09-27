@@ -6,6 +6,17 @@ import { mensagemErro, supabase } from '../lib/supabase.js'
 
 const CHAVE_TOKEN = 'cipa_token_dispositivo'
 
+// Som tocado depois que o voto é gravado. Basta colocar o arquivo em public/confirma.mp3
+const somConfirmacao = typeof Audio !== 'undefined' ? new Audio('/confirma.mp3') : null
+
+function tocarConfirmacao() {
+  if (!somConfirmacao) return
+  somConfirmacao.currentTime = 0
+  somConfirmacao.play().catch(() => {
+    // sem arquivo de som (ou navegador bloqueou): segue sem áudio
+  })
+}
+
 function lerToken() {
   try {
     return localStorage.getItem(CHAVE_TOKEN)
@@ -179,6 +190,7 @@ function Cabine({ token, sessao, onDesconectado }) {
     })
     setEnviando(false)
     if (error) return tratarErro(error)
+    tocarConfirmacao()
     setEtapa('fim')
     timer.current = setTimeout(reiniciar, 4000)
   }
