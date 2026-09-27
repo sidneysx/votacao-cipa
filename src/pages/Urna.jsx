@@ -1,5 +1,7 @@
+import { ArrowLeft, Ban, IdCard, Lock, MapPin, TabletSmartphone, UserRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Cabecalho from '../components/Cabecalho.jsx'
+import { Alerta, Carregando, Foto, IconeTopo, Palco } from '../components/ui.jsx'
 import { useConfig } from '../config.jsx'
 import { formatar, situacaoVotacao } from '../lib/datas.js'
 import { mensagemErro, supabase } from '../lib/supabase.js'
@@ -79,7 +81,9 @@ export default function Urna() {
     return (
       <>
         <Cabecalho />
-        <main className="centro"><p>Carregando…</p></main>
+        <Palco>
+          <Carregando />
+        </Palco>
       </>
     )
   }
@@ -105,25 +109,40 @@ function Ativacao({ aviso, onAtivado }) {
   return (
     <>
       <Cabecalho />
-      <main className="centro">
-        <form className="cartao estreito" onSubmit={ativar}>
-          <h1>Ativar urna</h1>
-          <p>Mesário: digite o código de ativação deste dispositivo, gerado no painel do administrador.</p>
-          {aviso && <p className="aviso">{aviso}</p>}
-          <label>
-            Código de ativação
+      <Palco>
+        <form onSubmit={ativar} className="cartao w-full max-w-md animate-entrar p-8 text-center">
+          <IconeTopo icone={TabletSmartphone} />
+          <h1 className="text-2xl font-bold text-slate-900">Ativar urna</h1>
+          <p className="mt-2 text-slate-500">
+            Mesário: digite o código de ativação deste dispositivo, gerado no painel do administrador.
+          </p>
+          {aviso && (
+            <div className="mt-5">
+              <Alerta tipo="info">{aviso}</Alerta>
+            </div>
+          )}
+          <div key={erro} className={erro ? 'animate-tremer' : ''}>
             <input
               value={codigo}
               onChange={(e) => setCodigo(e.target.value.toUpperCase())}
               placeholder="XXXX-XXXX"
+              aria-label="Código de ativação"
               autoComplete="off"
+              autoFocus
               required
+              className="entrada mt-6 text-center font-mono text-2xl font-semibold uppercase tracking-[0.3em]"
             />
-          </label>
-          {erro && <p className="erro">{erro}</p>}
-          <button disabled={enviando}>{enviando ? 'Ativando…' : 'Ativar'}</button>
+          </div>
+          {erro && (
+            <div className="mt-4">
+              <Alerta>{erro}</Alerta>
+            </div>
+          )}
+          <button className="btn btn-lg mt-6 w-full" disabled={enviando}>
+            {enviando ? 'Ativando…' : 'Ativar'}
+          </button>
         </form>
-      </main>
+      </Palco>
     </>
   )
 }
@@ -201,101 +220,207 @@ function Cabine({ token, sessao, onDesconectado }) {
     setEtapa('fim')
   }
 
+  function escolher(candidato) {
+    setEscolha(candidato)
+    setErro('')
+    setEtapa('confirmar')
+  }
+
   const situacao = situacaoVotacao(config)
+  const fechada = situacao !== 'aberta' && etapa === 'matricula'
+
+  let conteudo
+  if (fechada) {
+    conteudo = (
+      <div className="cartao w-full max-w-md p-8 text-center">
+        <IconeTopo icone={Lock} />
+        <h1 className="text-2xl font-bold text-slate-900">Urna fechada</h1>
+        <p className="mt-2 text-slate-500">
+          {situacao === 'sem-horario' && 'O horário da votação ainda não foi definido.'}
+          {situacao === 'antes' && `A votação começa em ${formatar(config.inicio)}.`}
+          {situacao === 'encerrada' && `A votação foi encerrada em ${formatar(config.fim)}.`}
+        </p>
+      </div>
+    )
+  } else if (etapa === 'matricula') {
+    conteudo = (
+      <form onSubmit={verificar} className="cartao w-full max-w-md p-8 text-center">
+        <IconeTopo icone={IdCard} />
+        <h1 className="text-2xl font-bold text-slate-900">Identificação</h1>
+        <p className="mt-2 text-slate-500">Digite a matrícula do eleitor.</p>
+        <div key={erro} className={erro ? 'animate-tremer' : ''}>
+          <input
+            value={matricula}
+            onChange={(e) => setMatricula(e.target.value)}
+            aria-label="Matrícula do eleitor"
+            inputMode="numeric"
+            autoComplete="off"
+            autoFocus
+            required
+            className="entrada mt-6 text-center text-3xl font-semibold tracking-widest"
+          />
+        </div>
+        {erro && (
+          <div className="mt-4">
+            <Alerta>{erro}</Alerta>
+          </div>
+        )}
+        <button className="btn btn-lg mt-6 w-full" disabled={enviando}>
+          {enviando ? 'Verificando…' : 'Continuar'}
+        </button>
+      </form>
+    )
+  } else if (etapa === 'candidato') {
+    conteudo = (
+      <div className="w-full max-w-5xl">
+        <div className="mb-8 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200">
+            <UserRound className="h-4 w-4 text-cor" />
+            {eleitor}
+          </span>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">Escolha seu candidato</h1>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {candidatos.map((c, i) => (
+            <button
+              key={c.id}
+              onClick={() => escolher(c)}
+              style={{ animationDelay: `${i * 50}ms` }}
+              className="group flex animate-entrar flex-col items-center rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-slate-200 transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-cor/10 hover:ring-2 hover:ring-cor active:scale-95"
+            >
+              <Foto url={c.foto_url} className="h-24 w-24 transition group-hover:ring-cor/20 sm:h-28 sm:w-28" />
+              <span className="mt-4 text-3xl font-extrabold text-cor">{c.numero}</span>
+              <span className="mt-1 font-semibold leading-tight text-slate-800">{c.nome}</span>
+            </button>
+          ))}
+          <button
+            onClick={() => escolher(null)}
+            style={{ animationDelay: `${candidatos.length * 50}ms` }}
+            className="flex animate-entrar flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white/60 p-5 text-center text-slate-500 transition duration-200 hover:-translate-y-1 hover:border-slate-400 hover:bg-white active:scale-95"
+          >
+            <Ban className="h-12 w-12" />
+            <span className="mt-4 font-semibold">Votar em branco</span>
+          </button>
+        </div>
+
+        <div className="mt-8 text-center">
+          <button className="btn-sec" onClick={reiniciar}>
+            <ArrowLeft className="h-4 w-4" />
+            Cancelar
+          </button>
+        </div>
+      </div>
+    )
+  } else if (etapa === 'confirmar') {
+    conteudo = (
+      <div className="cartao w-full max-w-md p-8 text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Confirme seu voto</p>
+        <div className="mt-6 flex flex-col items-center">
+          {escolha ? (
+            <>
+              <div className="animate-pop">
+                <Foto url={escolha.foto_url} className="h-36 w-36" />
+              </div>
+              <span className="mt-5 text-5xl font-extrabold text-cor">{escolha.numero}</span>
+              <span className="mt-1 text-xl font-semibold text-slate-900">{escolha.nome}</span>
+            </>
+          ) : (
+            <>
+              <div className="flex h-36 w-36 animate-pop items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                <Ban className="h-14 w-14" />
+              </div>
+              <span className="mt-5 text-2xl font-bold text-slate-900">Voto em branco</span>
+            </>
+          )}
+        </div>
+        {erro && (
+          <div className="mt-6">
+            <Alerta>{erro}</Alerta>
+          </div>
+        )}
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          <button className="btn-sec btn-lg" onClick={() => setEtapa('candidato')} disabled={enviando}>
+            Corrigir
+          </button>
+          <button className="btn-confirmar btn-lg" onClick={confirmar} disabled={enviando}>
+            {enviando ? 'Gravando…' : 'Confirmar'}
+          </button>
+        </div>
+      </div>
+    )
+  } else {
+    conteudo = (
+      <div className="cartao w-full max-w-md p-8 text-center">
+        <ChecAnimado />
+        <h1 className="mt-6 text-3xl font-bold text-slate-900">Voto registrado!</h1>
+        <p className="mt-2 text-slate-500">Obrigado por participar.</p>
+        <Contagem restante={restante} total={ESPERA_SEGUNDOS} />
+        <p className="mt-3 text-sm text-slate-400">Aguarde para liberar o próximo eleitor.</p>
+      </div>
+    )
+  }
 
   return (
     <>
       <Cabecalho>
-        <span className="etiqueta">{sessao.base} · {sessao.tag}</span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium ring-1 ring-white/25">
+          <MapPin className="h-3.5 w-3.5" />
+          {sessao.base} · {sessao.tag}
+        </span>
       </Cabecalho>
-      <main className="centro">
-        {situacao !== 'aberta' && etapa === 'matricula' ? (
-          <div className="cartao estreito">
-            <h1>Urna fechada</h1>
-            {situacao === 'sem-horario' && <p>O horário da votação ainda não foi definido.</p>}
-            {situacao === 'antes' && <p>A votação começa em {formatar(config.inicio)}.</p>}
-            {situacao === 'encerrada' && <p>A votação foi encerrada em {formatar(config.fim)}.</p>}
-          </div>
-        ) : etapa === 'matricula' ? (
-          <form className="cartao estreito" onSubmit={verificar}>
-            <h1>Identificação</h1>
-            <label>
-              Matrícula do eleitor
-              <input
-                value={matricula}
-                onChange={(e) => setMatricula(e.target.value)}
-                inputMode="numeric"
-                autoComplete="off"
-                autoFocus
-                required
-              />
-            </label>
-            {erro && <p className="erro">{erro}</p>}
-            <button disabled={enviando}>{enviando ? 'Verificando…' : 'Continuar'}</button>
-          </form>
-        ) : etapa === 'candidato' ? (
-          <div className="cartao largo">
-            <h1>Escolha seu candidato</h1>
-            <p>Eleitor: <strong>{eleitor}</strong></p>
-            <div className="grade-candidatos">
-              {candidatos.map((c) => (
-                <button
-                  key={c.id}
-                  className="candidato"
-                  onClick={() => {
-                    setEscolha(c)
-                    setEtapa('confirmar')
-                  }}
-                >
-                  {c.foto_url ? <img src={c.foto_url} alt="" /> : <div className="sem-foto" />}
-                  <span className="numero">{c.numero}</span>
-                  <span>{c.nome}</span>
-                </button>
-              ))}
-              <button
-                className="candidato branco"
-                onClick={() => {
-                  setEscolha(null)
-                  setEtapa('confirmar')
-                }}
-              >
-                <span className="numero">—</span>
-                <span>Votar em branco</span>
-              </button>
-            </div>
-            <button className="secundario" onClick={reiniciar}>Cancelar</button>
-          </div>
-        ) : etapa === 'confirmar' ? (
-          <div className="cartao estreito">
-            <h1>Confirme seu voto</h1>
-            {escolha ? (
-              <div className="confirmacao">
-                {escolha.foto_url && <img src={escolha.foto_url} alt="" />}
-                <span className="numero">{escolha.numero}</span>
-                <strong>{escolha.nome}</strong>
-              </div>
-            ) : (
-              <div className="confirmacao"><strong>Voto em branco</strong></div>
-            )}
-            {erro && <p className="erro">{erro}</p>}
-            <div className="acoes">
-              <button className="secundario" onClick={() => setEtapa('candidato')} disabled={enviando}>
-                Corrigir
-              </button>
-              <button className="confirmar" onClick={confirmar} disabled={enviando}>
-                {enviando ? 'Gravando…' : 'Confirmar'}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="cartao estreito">
-            <h1>Voto registrado!</h1>
-            <p>Obrigado por participar.</p>
-            <p className="contagem">{restante}</p>
-            <p className="dica">Aguarde para liberar o próximo eleitor.</p>
-          </div>
-        )}
-      </main>
+      <Palco>
+        {/* A key troca a cada etapa e faz a tela entrar animada */}
+        <div key={fechada ? 'fechada' : etapa} className="flex w-full animate-entrar justify-center">
+          {conteudo}
+        </div>
+      </Palco>
     </>
+  )
+}
+
+function ChecAnimado() {
+  return (
+    <div className="mx-auto flex h-24 w-24 animate-pop items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-12 w-12"
+        fill="none"
+        stroke="white"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M5 12.5l4.5 4.5L19 7.5" strokeDasharray="48" className="animate-desenhar" />
+      </svg>
+    </div>
+  )
+}
+
+// Anel que vai esvaziando junto com a contagem regressiva
+function Contagem({ restante, total }) {
+  const raio = 26
+  const circunferencia = 2 * Math.PI * raio
+  return (
+    <div className="relative mx-auto mt-8 h-20 w-20">
+      <svg viewBox="0 0 64 64" className="h-20 w-20 -rotate-90" aria-hidden>
+        <circle cx="32" cy="32" r={raio} fill="none" strokeWidth="5" className="stroke-slate-100" />
+        <circle
+          cx="32"
+          cy="32"
+          r={raio}
+          fill="none"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={circunferencia}
+          strokeDashoffset={circunferencia * (1 - restante / total)}
+          className="stroke-cor transition-[stroke-dashoffset] duration-1000 ease-linear"
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold tabular-nums text-slate-800">
+        {restante}
+      </span>
+    </div>
   )
 }

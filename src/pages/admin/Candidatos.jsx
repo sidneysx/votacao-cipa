@@ -1,4 +1,6 @@
+import { Pencil, Trash2, UserPlus, Users } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { Alerta, Foto, Selo, TituloSecao, Vazio } from '../../components/ui.jsx'
 import { enviarImagem, mensagemErro, supabase } from '../../lib/supabase.js'
 
 const VAZIO = { id: null, numero: '', nome: '', foto_url: null, ativo: true }
@@ -53,77 +55,98 @@ export default function Candidatos() {
     carregar()
   }
 
+  function editar(c) {
+    setForm({ ...c, numero: String(c.numero) })
+    setErro('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
-    <>
-      <form className="cartao" onSubmit={salvar}>
-        <h2>{form.id ? 'Editar candidato' : 'Novo candidato'}</h2>
-        <div className="linha">
-          <label className="curto">
+    <div className="space-y-6">
+      <form onSubmit={salvar} className="cartao space-y-5">
+        <TituloSecao
+          icone={form.id ? Pencil : UserPlus}
+          titulo={form.id ? 'Editar candidato' : 'Novo candidato'}
+          descricao="Número, nome e foto que aparecem na urna."
+        />
+        <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+          <label className="campo">
             Número
             <input
+              className="entrada"
               type="number"
               value={form.numero}
               onChange={(e) => setForm({ ...form, numero: e.target.value })}
               required
             />
           </label>
-          <label>
+          <label className="campo">
             Nome
-            <input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
+            <input
+              className="entrada"
+              value={form.nome}
+              onChange={(e) => setForm({ ...form, nome: e.target.value })}
+              required
+            />
           </label>
         </div>
-        <label>
-          Foto (opcional)
-          <input type="file" accept="image/*" onChange={trocarFoto} />
-        </label>
-        {form.foto_url && <img src={form.foto_url} alt="" className="foto-previa" />}
-        <label className="check">
-          <input type="checkbox" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />
+        <div className="flex items-center gap-4">
+          <Foto url={form.foto_url} className="h-16 w-16" />
+          <label className="campo flex-1">
+            Foto (opcional)
+            <input type="file" accept="image/*" onChange={trocarFoto} className="entrada-arquivo" />
+          </label>
+        </div>
+        <label className="flex cursor-pointer items-center gap-3 text-sm font-medium text-slate-700">
+          <input
+            type="checkbox"
+            checked={form.ativo}
+            onChange={(e) => setForm({ ...form, ativo: e.target.checked })}
+            className="h-5 w-5 cursor-pointer rounded accent-cor"
+          />
           Ativo (aparece na urna)
         </label>
-        {erro && <p className="erro">{erro}</p>}
-        <div className="acoes">
+        <Alerta>{erro}</Alerta>
+        <div className="flex justify-end gap-3">
           {form.id && (
-            <button type="button" className="secundario" onClick={() => setForm(VAZIO)}>
+            <button type="button" className="btn-sec" onClick={() => setForm(VAZIO)}>
               Cancelar
             </button>
           )}
-          <button>{form.id ? 'Salvar alterações' : 'Adicionar'}</button>
+          <button className="btn">{form.id ? 'Salvar alterações' : 'Adicionar candidato'}</button>
         </div>
       </form>
 
-      <div className="tabela-rolagem">
-        <table>
-          <thead>
-            <tr>
-              <th>Nº</th>
-              <th>Foto</th>
-              <th>Nome</th>
-              <th>Situação</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {lista.map((c) => (
-              <tr key={c.id}>
-                <td>{c.numero}</td>
-                <td>{c.foto_url && <img src={c.foto_url} alt="" className="miniatura" />}</td>
-                <td>{c.nome}</td>
-                <td>{c.ativo ? 'Ativo' : 'Inativo'}</td>
-                <td className="acoes-tabela">
-                  <button className="secundario" onClick={() => setForm({ ...c, numero: String(c.numero) })}>
-                    Editar
-                  </button>
-                  <button className="excluir" onClick={() => excluir(c)}>Excluir</button>
-                </td>
-              </tr>
-            ))}
-            {lista.length === 0 && (
-              <tr><td colSpan={5} className="aviso">Nenhum candidato cadastrado.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </>
+      {lista.length === 0 ? (
+        <Vazio icone={Users}>Nenhum candidato cadastrado.</Vazio>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {lista.map((c, i) => (
+            <div
+              key={c.id}
+              style={{ animationDelay: `${i * 40}ms` }}
+              className={`cartao flex animate-entrar items-center gap-4 p-4 transition hover:shadow-md ${form.id === c.id ? 'ring-2 ring-cor' : ''}`}
+            >
+              <Foto url={c.foto_url} className="h-16 w-16" />
+              <div className="min-w-0 flex-1">
+                <div className="text-2xl font-extrabold leading-none text-cor">{c.numero}</div>
+                <div className="mt-1 truncate font-semibold text-slate-900">{c.nome}</div>
+                <div className="mt-1.5">
+                  <Selo cor={c.ativo ? 'verde' : 'cinza'}>{c.ativo ? 'Ativo' : 'Inativo'}</Selo>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <button className="btn-icone" title="Editar" onClick={() => editar(c)}>
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button className="btn-icone-perigo" title="Excluir" onClick={() => excluir(c)}>
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }

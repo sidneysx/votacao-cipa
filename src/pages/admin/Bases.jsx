@@ -1,4 +1,6 @@
+import { Building2, MapPin, Pencil, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { Alerta, TituloSecao, Vazio } from '../../components/ui.jsx'
 import { mensagemErro, supabase } from '../../lib/supabase.js'
 
 export default function Bases() {
@@ -42,48 +44,67 @@ export default function Bases() {
     carregar()
   }
 
+  function cancelar() {
+    setEditando(null)
+    setNome('')
+  }
+
   return (
-    <>
-      <form className="cartao" onSubmit={salvar}>
-        <h2>{editando ? 'Renomear base' : 'Nova base'}</h2>
-        <label>
-          Nome da base / regional
-          <input value={nome} onChange={(e) => setNome(e.target.value)} required />
-        </label>
-        {erro && <p className="erro">{erro}</p>}
-        <div className="acoes">
+    <div className="space-y-6">
+      <form onSubmit={salvar} className="cartao space-y-4">
+        <TituloSecao
+          icone={editando ? Pencil : Building2}
+          titulo={editando ? 'Renomear base' : 'Nova base'}
+          descricao="Cada voto é contado na base do dispositivo em que foi feito."
+        />
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <input
+            className="entrada flex-1"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Nome da base / regional"
+            aria-label="Nome da base"
+            required
+          />
           {editando && (
-            <button type="button" className="secundario" onClick={() => { setEditando(null); setNome('') }}>
+            <button type="button" className="btn-sec" onClick={cancelar}>
               Cancelar
             </button>
           )}
-          <button>{editando ? 'Salvar' : 'Adicionar'}</button>
+          <button className="btn">{editando ? 'Salvar' : 'Adicionar'}</button>
         </div>
+        <Alerta>{erro}</Alerta>
       </form>
 
-      <div className="tabela-rolagem">
-        <table>
-          <thead>
-            <tr><th>Base</th><th /></tr>
-          </thead>
-          <tbody>
-            {lista.map((b) => (
-              <tr key={b.id}>
-                <td>{b.nome}</td>
-                <td className="acoes-tabela">
-                  <button className="secundario" onClick={() => { setEditando(b.id); setNome(b.nome) }}>
-                    Renomear
-                  </button>
-                  <button className="excluir" onClick={() => excluir(b)}>Excluir</button>
-                </td>
-              </tr>
-            ))}
-            {lista.length === 0 && (
-              <tr><td colSpan={2} className="aviso">Nenhuma base cadastrada.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </>
+      {lista.length === 0 ? (
+        <Vazio icone={Building2}>Nenhuma base cadastrada.</Vazio>
+      ) : (
+        <ul className="cartao divide-y divide-slate-100 p-0">
+          {lista.map((b, i) => (
+            <li
+              key={b.id}
+              style={{ animationDelay: `${i * 30}ms` }}
+              className={`flex animate-entrar items-center gap-3 px-5 py-3.5 transition-colors ${editando === b.id ? 'bg-cor/5' : 'hover:bg-slate-50/70'}`}
+            >
+              <MapPin className="h-4 w-4 shrink-0 text-cor" />
+              <span className="flex-1 font-medium text-slate-800">{b.nome}</span>
+              <button
+                className="btn-icone"
+                title="Renomear"
+                onClick={() => {
+                  setEditando(b.id)
+                  setNome(b.nome)
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button className="btn-icone-perigo" title="Excluir" onClick={() => excluir(b)}>
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }

@@ -3,6 +3,12 @@ import { supabase } from './lib/supabase.js'
 
 const ConfigContext = createContext(null)
 
+// "#1d4ed8" -> "29 78 216" (formato usado pelo Tailwind em rgb(var(--cor-rgb) / alpha))
+function hexParaRgb(hex) {
+  const valor = parseInt(hex.replace('#', ''), 16)
+  return `${(valor >> 16) & 255} ${(valor >> 8) & 255} ${valor & 255}`
+}
+
 export function ConfigProvider({ children }) {
   const [config, setConfig] = useState(null)
 
@@ -17,7 +23,7 @@ export function ConfigProvider({ children }) {
 
   useEffect(() => {
     if (!config) return
-    document.documentElement.style.setProperty('--cor', config.cor)
+    document.documentElement.style.setProperty('--cor-rgb', hexParaRgb(config.cor))
     document.title = config.nome
   }, [config])
 

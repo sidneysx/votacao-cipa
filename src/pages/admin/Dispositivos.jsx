@@ -1,4 +1,6 @@
+import { KeyRound, Lock, LockOpen, MapPin, MonitorSmartphone, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { Alerta, Selo, TituloSecao, Vazio } from '../../components/ui.jsx'
 import { formatar } from '../../lib/datas.js'
 import { mensagemErro, supabase } from '../../lib/supabase.js'
 
@@ -67,21 +69,27 @@ export default function Dispositivos() {
   }
 
   return (
-    <>
-      <form className="cartao" onSubmit={adicionar}>
-        <h2>Novo dispositivo</h2>
-        <p className="dica">
-          Cadastre cada tablet ou computador de votação. Todo voto feito nele conta para a base escolhida aqui.
-          Depois, abra o site no aparelho e digite o código de ativação (só funciona uma vez).
-        </p>
-        <div className="linha">
-          <label>
+    <div className="space-y-6">
+      <form onSubmit={adicionar} className="cartao space-y-5">
+        <TituloSecao
+          icone={MonitorSmartphone}
+          titulo="Novo dispositivo"
+          descricao="Cada tablet ou computador de votação fica amarrado a uma base. Depois de cadastrar, abra o site no aparelho e digite o código (funciona uma única vez)."
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="campo">
             Tag / nome do aparelho
-            <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Ex.: TABLET-01" required />
+            <input
+              className="entrada"
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder="Ex.: TABLET-01"
+              required
+            />
           </label>
-          <label>
+          <label className="campo">
             Base
-            <select value={baseId} onChange={(e) => setBaseId(e.target.value)} required>
+            <select className="entrada" value={baseId} onChange={(e) => setBaseId(e.target.value)} required>
               <option value="">Selecione…</option>
               {bases.map((b) => (
                 <option key={b.id} value={b.id}>{b.nome}</option>
@@ -89,47 +97,68 @@ export default function Dispositivos() {
             </select>
           </label>
         </div>
-        {bases.length === 0 && <p className="aviso">Cadastre as bases primeiro.</p>}
-        {erro && <p className="erro">{erro}</p>}
-        <button>Adicionar</button>
+        {bases.length === 0 && <Alerta tipo="info">Cadastre as bases primeiro.</Alerta>}
+        <Alerta>{erro}</Alerta>
+        <div className="flex justify-end">
+          <button className="btn">Adicionar dispositivo</button>
+        </div>
       </form>
 
-      <div className="tabela-rolagem">
-        <table>
-          <thead>
-            <tr><th>Tag</th><th>Base</th><th>Situação</th><th /></tr>
-          </thead>
-          <tbody>
-            {lista.map((d) => (
-              <tr key={d.id}>
-                <td>{d.tag}</td>
-                <td>{d.bases?.nome}</td>
-                <td>
-                  {!d.ativo ? (
-                    <span className="status bloqueado">Bloqueado</span>
-                  ) : d.token ? (
-                    <span className="status ok">Ativo desde {formatar(d.ativado_em)}</span>
-                  ) : (
-                    <span className="status pendente">
-                      Aguardando ativação — código <code>{exibirCodigo(d.codigo)}</code>
-                    </span>
-                  )}
-                </td>
-                <td className="acoes-tabela">
-                  <button className="secundario" onClick={() => novoCodigo(d)}>Novo código</button>
-                  <button className="secundario" onClick={() => alternarBloqueio(d)}>
-                    {d.ativo ? 'Bloquear' : 'Desbloquear'}
-                  </button>
-                  <button className="excluir" onClick={() => excluir(d)}>Excluir</button>
-                </td>
-              </tr>
-            ))}
-            {lista.length === 0 && (
-              <tr><td colSpan={4} className="aviso">Nenhum dispositivo cadastrado.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </>
+      {lista.length === 0 ? (
+        <Vazio icone={MonitorSmartphone}>Nenhum dispositivo cadastrado.</Vazio>
+      ) : (
+        <div className="space-y-3">
+          {lista.map((d, i) => (
+            <div
+              key={d.id}
+              style={{ animationDelay: `${i * 40}ms` }}
+              className="cartao flex animate-entrar flex-col gap-4 p-4 lg:flex-row lg:items-center"
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className={`rounded-xl p-2.5 ${d.ativo ? 'bg-cor/10 text-cor' : 'bg-red-50 text-red-500'}`}>
+                  <MonitorSmartphone className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate font-semibold text-slate-900">{d.tag}</div>
+                  <div className="flex items-center gap-1 text-sm text-slate-500">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {d.bases?.nome}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 lg:w-80">
+                {!d.ativo ? (
+                  <Selo cor="vermelho">Bloqueado</Selo>
+                ) : d.token ? (
+                  <Selo cor="verde">Ativo desde {formatar(d.ativado_em)}</Selo>
+                ) : (
+                  <>
+                    <Selo cor="amarelo">Aguardando ativação</Selo>
+                    <code className="rounded-lg bg-slate-900 px-3 py-1 font-mono text-base font-bold tracking-widest text-white">
+                      {exibirCodigo(d.codigo)}
+                    </code>
+                  </>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <button className="btn-sec btn-sm" onClick={() => novoCodigo(d)}>
+                  <KeyRound className="h-3.5 w-3.5" />
+                  Novo código
+                </button>
+                <button className="btn-sec btn-sm" onClick={() => alternarBloqueio(d)}>
+                  {d.ativo ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
+                  {d.ativo ? 'Bloquear' : 'Desbloquear'}
+                </button>
+                <button className="btn-icone-perigo h-8 w-8" title="Excluir" onClick={() => excluir(d)}>
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
