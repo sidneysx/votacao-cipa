@@ -1,0 +1,439 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --cor: #1d4ed8;
+  --texto: #1f2937;
+  --suave: #6b7280;
+  --borda: #e5e7eb;
+  --fundo: #f3f4f6;
+  --verde: #15803d;
+  --vermelho: #b91c1c;
+  --amarelo: #a16207;
+
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#root > main {
+  flex: 1;
+  width: 100%;
+}
+
+.rodape {
+  margin-top: auto;
+  padding: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--suave);
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+main.centro {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 48px;
+}
+
+h1 {
+  margin: 0 0 16px;
+  font-size: 1.6rem;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--cor);
+  color: #fff;
+}
+
+.cabecalho-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+  background: #fff;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.etiqueta {
+  font-size: 0.9rem;
+  background: rgb(255 255 255 / 0.2);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 16px 0;
+  background: #fff;
+  border-bottom: 1px solid var(--borda);
+}
+
+.abas button {
+  background: none;
+  color: var(--suave);
+  border-radius: 0;
+  border-bottom: 3px solid transparent;
+}
+
+.abas button.ativa {
+  color: var(--cor);
+  border-bottom-color: var(--cor);
+}
+
+/* ---------- Cartões e formulários ---------- */
+
+.cartao {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.cartao.estreito {
+  max-width: 440px;
+  text-align: center;
+}
+
+.cartao.largo {
+  max-width: 1000px;
+  text-align: center;
+}
+
+.cartao.perigo {
+  border-color: #fecaca;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  text-align: left;
+  flex: 1;
+}
+
+label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+label.curto {
+  flex: 0 0 120px;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  width: 100%;
+}
+
+input[type='checkbox'] {
+  width: auto;
+}
+
+input[type='color'] {
+  height: 44px;
+  padding: 4px;
+  max-width: 120px;
+}
+
+.cartao.estreito input {
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cor);
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.secundario {
+  background: #fff;
+  color: var(--texto);
+  border: 1px solid #d1d5db;
+}
+
+.cabecalho button.secundario {
+  background: transparent;
+  color: #fff;
+  border-color: rgb(255 255 255 / 0.5);
+}
+
+button.excluir {
+  background: #fff;
+  color: var(--vermelho);
+  border: 1px solid #fecaca;
+}
+
+button.confirmar {
+  background: var(--verde);
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.colunas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.acoes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.erro {
+  color: var(--vermelho);
+}
+
+.sucesso {
+  color: var(--verde);
+}
+
+.aviso,
+.dica {
+  color: var(--suave);
+}
+
+.dica {
+  font-size: 0.9rem;
+}
+
+code {
+  background: var(--fundo);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.95em;
+}
+
+.logo-previa {
+  height: 60px;
+}
+
+.foto-previa {
+  height: 100px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.miniatura {
+  height: 40px;
+  width: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* ---------- Tabelas ---------- */
+
+.tabela-rolagem {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--borda);
+  white-space: nowrap;
+}
+
+thead th,
+tfoot th {
+  background: var(--fundo);
+  font-size: 0.9rem;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.acoes-tabela {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.acoes-tabela button {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+
+.status {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status.ok {
+  color: var(--verde);
+}
+
+.status.pendente {
+  color: var(--amarelo);
+}
+
+.status.bloqueado {
+  color: var(--vermelho);
+}
+
+.resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.resumo > div {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 12px 20px;
+}
+
+.resumo strong {
+  font-size: 1.4rem;
+  display: block;
+}
+
+/* ---------- Urna ---------- */
+
+.grade-candidatos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.candidato {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  background: #fff;
+  color: var(--texto);
+  border: 2px solid var(--borda);
+  border-radius: 12px;
+}
+
+.candidato:hover {
+  border-color: var(--cor);
+}
+
+.candidato img,
+.candidato .sem-foto {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--fundo);
+}
+
+.candidato.branco {
+  justify-content: center;
+  border-style: dashed;
+}
+
+.numero {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cor);
+}
+
+.confirmacao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 24px;
+  font-size: 1.2rem;
+}
+
+.confirmacao img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+}
