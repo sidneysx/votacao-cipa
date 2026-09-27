@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Cabecalho from '../components/Cabecalho.jsx'
 import { useConfig } from '../config.jsx'
 import { formatar, situacaoVotacao } from '../lib/datas.js'
 import { mensagemErro, supabase } from '../lib/supabase.js'
 
 const CHAVE_TOKEN = 'cipa_token_dispositivo'
+
+// Tempo de espera depois do voto antes de liberar o próximo eleitor
+const ESPERA_SEGUNDOS = 10
 
 // Som tocado depois que o voto é gravado. Basta colocar o arquivo em public/confirma.mp3
 const somConfirmacao = typeof Audio !== 'undefined' ? new Audio('/confirma.mp3') : null
@@ -135,7 +138,7 @@ function Cabine({ token, sessao, onDesconectado }) {
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [, atualizarRelogio] = useState(0)
-  const timer = useRef(null)
+  const [restante, setRestante] = useState(0)
 
   useEffect(() => {
     supabase
@@ -149,14 +152,17 @@ function Cabine({ token, sessao, onDesconectado }) {
   // Reavalia a cada 30s se a votação abriu/fechou
   useEffect(() => {
     const id = setInterval(() => atualizarRelogio((n) => n + 1), 30000)
-    return () => {
-      clearInterval(id)
-      clearTimeout(timer.current)
-    }
+    return () => clearInterval(id)
   }, [])
 
+  // Contagem regressiva da tela "Voto registrado"
+  useEffect(() => {
+    if (etapa !== 'fim') return
+    const id = setTimeout(() => (restante <= 1 ? reiniciar() : setRestante(restante - 1)), 1000)
+    return () => clearTimeout(id)
+  }, [etapa, restante])
+
   function reiniciar() {
-    clearTimeout(timer.current)
     setEtapa('matricula')
     setMatricula('')
     setEleitor('')
@@ -191,8 +197,8 @@ function Cabine({ token, sessao, onDesconectado }) {
     setEnviando(false)
     if (error) return tratarErro(error)
     tocarConfirmacao()
+    setRestante(ESPERA_SEGUNDOS)
     setEtapa('fim')
-    timer.current = setTimeout(reiniciar, 4000)
   }
 
   const situacao = situacaoVotacao(config)
@@ -285,7 +291,8 @@ function Cabine({ token, sessao, onDesconectado }) {
           <div className="cartao estreito">
             <h1>Voto registrado!</h1>
             <p>Obrigado por participar.</p>
-            <button onClick={reiniciar}>Próximo eleitor</button>
+            <p className="contagem">{restante}</p>
+            <p className="dica">Aguarde para liberar o próximo eleitor.</p>
           </div>
         )}
       </main>

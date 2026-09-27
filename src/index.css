@@ -422,6 +422,14 @@ tfoot th {
   color: var(--cor);
 }
 
+.contagem {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--cor);
+  margin: 8px 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .confirmacao {
   display: flex;
   flex-direction: column;
