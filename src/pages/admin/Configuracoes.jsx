@@ -1,6 +1,6 @@
-import { CalendarClock, Palette, TriangleAlert } from 'lucide-react'
+import { CalendarClock, Palette, Trophy, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
-import { Alerta, Carregando, TituloSecao } from '../../components/ui.jsx'
+import { Alerta, Carregando, EntradaArquivo, EntradaData, TituloSecao } from '../../components/ui.jsx'
 import { useConfig } from '../../config.jsx'
 import { deInput, paraInput } from '../../lib/datas.js'
 import { enviarImagem, mensagemErro, supabase } from '../../lib/supabase.js'
@@ -18,6 +18,8 @@ function Formulario({ config, recarregar }) {
     logo_url: config.logo_url,
     inicio: paraInput(config.inicio),
     fim: paraInput(config.fim),
+    titulares: String(config.titulares ?? 1),
+    suplentes: String(config.suplentes ?? 0),
   })
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
@@ -38,7 +40,12 @@ function Formulario({ config, recarregar }) {
 
   async function salvar(e) {
     e.preventDefault()
-    if (form.inicio && form.fim && form.fim <= form.inicio) {
+    const inicio = deInput(form.inicio)
+    const fim = deInput(form.fim)
+    if (inicio === undefined || fim === undefined) {
+      return setErro('Data inválida. Use DD/MM/AAAA HH:MM.')
+    }
+    if (inicio && fim && fim <= inicio) {
       return setErro('O encerramento precisa ser depois da abertura.')
     }
     setSalvando(true)
@@ -50,8 +57,10 @@ function Formulario({ config, recarregar }) {
         nome: form.nome,
         cor: form.cor,
         logo_url: form.logo_url,
-        inicio: deInput(form.inicio),
-        fim: deInput(form.fim),
+        inicio,
+        fim,
+        titulares: Number(form.titulares),
+        suplentes: Number(form.suplentes),
       })
       .eq('id', 1)
     setSalvando(false)
@@ -101,7 +110,7 @@ function Formulario({ config, recarregar }) {
             </label>
             <label className="campo">
               Logo
-              <input type="file" accept="image/*" onChange={trocarLogo} className="entrada-arquivo" />
+              <EntradaArquivo accept="image/*" aoEscolher={trocarLogo} />
             </label>
           </div>
           {form.logo_url && (
@@ -123,11 +132,43 @@ function Formulario({ config, recarregar }) {
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="campo">
               Abertura
-              <input className="entrada" type="datetime-local" value={form.inicio} onChange={alterar('inicio')} />
+              <EntradaData comHora valor={form.inicio} aoMudar={(inicio) => setForm({ ...form, inicio })} />
             </label>
             <label className="campo">
               Encerramento
-              <input className="entrada" type="datetime-local" value={form.fim} onChange={alterar('fim')} />
+              <EntradaData comHora valor={form.fim} aoMudar={(fim) => setForm({ ...form, fim })} />
+            </label>
+          </div>
+        </section>
+
+        <section className="space-y-5">
+          <TituloSecao
+            icone={Trophy}
+            titulo="Eleitos"
+            descricao="Vagas conforme o Quadro I da NR-5. Empate é decidido pelo maior tempo de empresa (data de admissão)."
+          />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="campo">
+              Titulares
+              <input
+                className="entrada"
+                type="number"
+                min="1"
+                value={form.titulares}
+                onChange={alterar('titulares')}
+                required
+              />
+            </label>
+            <label className="campo">
+              Suplentes
+              <input
+                className="entrada"
+                type="number"
+                min="0"
+                value={form.suplentes}
+                onChange={alterar('suplentes')}
+                required
+              />
             </label>
           </div>
         </section>

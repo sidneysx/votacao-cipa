@@ -26,10 +26,6 @@
     @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-cor focus:outline-none focus:ring-4 focus:ring-cor/15;
   }
 
-  .entrada-arquivo {
-    @apply block w-full cursor-pointer text-sm text-slate-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-cor/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-cor file:transition hover:file:bg-cor/20;
-  }
-
   .dica {
     @apply text-sm text-slate-500;
   }

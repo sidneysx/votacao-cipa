@@ -1,9 +1,10 @@
 import { Pencil, Trash2, UserPlus, Users } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { Alerta, Foto, Selo, TituloSecao, Vazio } from '../../components/ui.jsx'
+import { Alerta, EntradaArquivo, EntradaData, Foto, Selo, TituloSecao, Vazio } from '../../components/ui.jsx'
+import { dataParaBanco, formatarData } from '../../lib/datas.js'
 import { enviarImagem, mensagemErro, supabase } from '../../lib/supabase.js'
 
-const VAZIO = { id: null, numero: '', nome: '', foto_url: null, ativo: true }
+const VAZIO = { id: null, numero: '', nome: '', data_admissao: '', foto_url: null, ativo: true }
 
 export default function Candidatos() {
   const [lista, setLista] = useState([])
@@ -33,7 +34,15 @@ export default function Candidatos() {
   async function salvar(e) {
     e.preventDefault()
     setErro('')
-    const dados = { numero: Number(form.numero), nome: form.nome, foto_url: form.foto_url, ativo: form.ativo }
+    const admissao = dataParaBanco(form.data_admissao)
+    if (admissao === undefined) return setErro('Data de admissão inválida. Use DD/MM/AAAA.')
+    const dados = {
+      numero: Number(form.numero),
+      nome: form.nome,
+      data_admissao: admissao,
+      foto_url: form.foto_url,
+      ativo: form.ativo,
+    }
     const { error } = form.id
       ? await supabase.from('candidatos').update(dados).eq('id', form.id)
       : await supabase.from('candidatos').insert(dados)
@@ -56,7 +65,7 @@ export default function Candidatos() {
   }
 
   function editar(c) {
-    setForm({ ...c, numero: String(c.numero) })
+    setForm({ ...c, numero: String(c.numero), data_admissao: c.data_admissao ? formatarData(c.data_admissao) : '' })
     setErro('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -67,9 +76,9 @@ export default function Candidatos() {
         <TituloSecao
           icone={form.id ? Pencil : UserPlus}
           titulo={form.id ? 'Editar candidato' : 'Novo candidato'}
-          descricao="Número, nome e foto que aparecem na urna."
+          descricao="Número, nome e foto que aparecem na urna. A data de admissão desempata a apuração."
         />
-        <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+        <div className="grid gap-4 sm:grid-cols-[8rem_1fr_11rem]">
           <label className="campo">
             Número
             <input
@@ -89,12 +98,20 @@ export default function Candidatos() {
               required
             />
           </label>
+          <label className="campo">
+            Data de admissão
+            <EntradaData
+              valor={form.data_admissao}
+              aoMudar={(data_admissao) => setForm({ ...form, data_admissao })}
+              required
+            />
+          </label>
         </div>
         <div className="flex items-center gap-4">
           <Foto url={form.foto_url} className="h-16 w-16" />
           <label className="campo flex-1">
             Foto (opcional)
-            <input type="file" accept="image/*" onChange={trocarFoto} className="entrada-arquivo" />
+            <EntradaArquivo accept="image/*" aoEscolher={trocarFoto} />
           </label>
         </div>
         <label className="flex cursor-pointer items-center gap-3 text-sm font-medium text-slate-700">
@@ -131,6 +148,7 @@ export default function Candidatos() {
               <div className="min-w-0 flex-1">
                 <div className="text-2xl font-extrabold leading-none text-cor">{c.numero}</div>
                 <div className="mt-1 truncate font-semibold text-slate-900">{c.nome}</div>
+                <div className="text-xs text-slate-500">Admissão: {formatarData(c.data_admissao)}</div>
                 <div className="mt-1.5">
                   <Selo cor={c.ativo ? 'verde' : 'cinza'}>{c.ativo ? 'Ativo' : 'Inativo'}</Selo>
                 </div>

@@ -7,7 +7,7 @@ import { useConfig } from '../config.jsx'
 import { formatar, situacaoVotacao } from '../lib/datas.js'
 import { mensagemErro, supabase } from '../lib/supabase.js'
 
-export function PainelResultado() {
+export function PainelResultado({ completo = true }) {
   const { config } = useConfig()
   const [dados, setDados] = useState(null)
   const [erro, setErro] = useState('')
@@ -37,7 +37,15 @@ export function PainelResultado() {
   }
   if (erro) return <Alerta>{erro}</Alerta>
   if (!dados) return <Carregando texto="Apurando…" />
-  return <TabelaResultado linhas={dados.linhas} candidatos={dados.candidatos} />
+  return (
+    <TabelaResultado
+      linhas={dados.linhas}
+      candidatos={dados.candidatos}
+      titulares={config.titulares ?? 1}
+      suplentes={config.suplentes ?? 0}
+      completo={completo}
+    />
+  )
 }
 
 export default function Resultado() {
@@ -46,7 +54,7 @@ export default function Resultado() {
       <Cabecalho />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         <h1 className="mb-6 animate-entrar text-3xl font-bold tracking-tight text-slate-900">Resultado</h1>
-        <PainelResultado />
+        <PainelResultado completo={false} />
       </main>
     </>
   )

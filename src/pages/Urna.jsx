@@ -1,4 +1,4 @@
-import { ArrowLeft, Ban, IdCard, Lock, MapPin, TabletSmartphone, UserRound } from 'lucide-react'
+import { ArrowLeft, IdCard, Lock, MapPin, TabletSmartphone, UserRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Cabecalho from '../components/Cabecalho.jsx'
 import { Alerta, Carregando, Foto, IconeTopo, Palco } from '../components/ui.jsx'
@@ -211,7 +211,7 @@ function Cabine({ token, sessao, onDesconectado }) {
     const { error } = await supabase.rpc('registrar_voto', {
       p_token: token,
       p_matricula: matricula,
-      p_candidato: escolha?.id ?? null,
+      p_candidato: escolha.id,
     })
     setEnviando(false)
     if (error) return tratarErro(error)
@@ -294,14 +294,6 @@ function Cabine({ token, sessao, onDesconectado }) {
               <span className="mt-1 font-semibold leading-tight text-slate-800">{c.nome}</span>
             </button>
           ))}
-          <button
-            onClick={() => escolher(null)}
-            style={{ animationDelay: `${candidatos.length * 50}ms` }}
-            className="flex animate-entrar flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white/60 p-5 text-center text-slate-500 transition duration-200 hover:-translate-y-1 hover:border-slate-400 hover:bg-white active:scale-95"
-          >
-            <Ban className="h-12 w-12" />
-            <span className="mt-4 font-semibold">Votar em branco</span>
-          </button>
         </div>
 
         <div className="mt-8 text-center">
@@ -317,22 +309,11 @@ function Cabine({ token, sessao, onDesconectado }) {
       <div className="cartao w-full max-w-md p-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Confirme seu voto</p>
         <div className="mt-6 flex flex-col items-center">
-          {escolha ? (
-            <>
-              <div className="animate-pop">
-                <Foto url={escolha.foto_url} className="h-36 w-36" />
-              </div>
-              <span className="mt-5 text-5xl font-extrabold text-cor">{escolha.numero}</span>
-              <span className="mt-1 text-xl font-semibold text-slate-900">{escolha.nome}</span>
-            </>
-          ) : (
-            <>
-              <div className="flex h-36 w-36 animate-pop items-center justify-center rounded-full bg-slate-100 text-slate-400">
-                <Ban className="h-14 w-14" />
-              </div>
-              <span className="mt-5 text-2xl font-bold text-slate-900">Voto em branco</span>
-            </>
-          )}
+          <div className="animate-pop">
+            <Foto url={escolha.foto_url} className="h-36 w-36" />
+          </div>
+          <span className="mt-5 text-5xl font-extrabold text-cor">{escolha.numero}</span>
+          <span className="mt-1 text-xl font-semibold text-slate-900">{escolha.nome}</span>
         </div>
         {erro && (
           <div className="mt-6">

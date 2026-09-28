@@ -22,7 +22,9 @@ create table config (
   cor      text not null default '#1d4ed8',
   logo_url text,
   inicio   timestamptz,  -- abertura da votação
-  fim      timestamptz   -- encerramento; o resultado só aparece depois disso
+  fim      timestamptz,  -- encerramento; o resultado só aparece depois disso
+  titulares int not null default 1 check (titulares >= 1),  -- vagas de titular (NR-5, Quadro I)
+  suplentes int not null default 0 check (suplentes >= 0)
 );
 insert into config (id) values (1);
 
@@ -37,7 +39,8 @@ create table candidatos (
   numero   int not null unique,
   nome     text not null,
   foto_url text,
-  ativo    boolean not null default true
+  ativo    boolean not null default true,
+  data_admissao date  -- desempate: maior tempo de serviço (NR-5)
 );
 
 -- Cada tablet/computador de votação. Fica amarrado a uma base.
@@ -63,7 +66,7 @@ create table eleitores (
 );
 
 -- Votos. Não tem eleitor nem horário, só candidato + base.
--- candidato_id nulo = voto em branco.
+-- Não existe voto em branco; candidato_id só fica nulo em votos antigos.
 create table votos (
   id             uuid primary key default gen_random_uuid(),
   candidato_id   uuid references candidatos(id) on delete restrict,
@@ -182,7 +185,7 @@ begin
 end $$;
 
 -- Grava o voto: marca o eleitor como "votou" e soma um voto para o candidato
--- na base do aparelho, na mesma transação. p_candidato nulo = branco.
+-- na base do aparelho, na mesma transação. Não aceita voto em branco.
 create function registrar_voto(p_token uuid, p_matricula text, p_candidato uuid) returns void
 language plpgsql security definer set search_path = public as $$
 declare
@@ -190,8 +193,8 @@ declare
 begin
   d := checar_urna(p_token);
 
-  if p_candidato is not null
-     and not exists (select 1 from candidatos where id = p_candidato and ativo) then
+  if p_candidato is null
+     or not exists (select 1 from candidatos where id = p_candidato and ativo) then
     raise exception 'Candidato inválido';
   end if;
 

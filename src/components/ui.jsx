@@ -1,4 +1,6 @@
-import { LoaderCircle, UserRound } from 'lucide-react'
+import { LoaderCircle, Upload, UserRound } from 'lucide-react'
+import { useState } from 'react'
+import { mascaraData } from '../lib/datas.js'
 
 export function Carregando({ texto = 'Carregando…' }) {
   return (
@@ -118,5 +120,43 @@ export function Palco({ children, centralizar = false }) {
       />
       <div className="relative flex w-full justify-center">{children}</div>
     </main>
+  )
+}
+
+// Campo de data em DD/MM/AAAA (ou DD/MM/AAAA HH:MM), independente do idioma do navegador
+export function EntradaData({ valor, aoMudar, comHora = false, ...resto }) {
+  return (
+    <input
+      className="entrada tabular-nums"
+      inputMode="numeric"
+      autoComplete="off"
+      placeholder={comHora ? 'DD/MM/AAAA HH:MM' : 'DD/MM/AAAA'}
+      value={valor}
+      onChange={(e) => aoMudar(mascaraData(e.target.value, comHora))}
+      {...resto}
+    />
+  )
+}
+
+// Seletor de arquivo em português. Deve ficar dentro de um <label>, que abre a janela ao clicar.
+export function EntradaArquivo({ aoEscolher, accept }) {
+  const [nome, setNome] = useState('')
+  return (
+    <span className="flex cursor-pointer items-center gap-3 text-sm text-slate-500">
+      <input
+        type="file"
+        accept={accept}
+        className="peer sr-only"
+        onChange={(e) => {
+          setNome(e.target.files[0]?.name ?? '')
+          aoEscolher(e)
+        }}
+      />
+      <span className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-cor/10 px-4 py-2 font-semibold text-cor transition hover:bg-cor/20 peer-focus-visible:ring-2 peer-focus-visible:ring-cor">
+        <Upload className="h-4 w-4" />
+        Escolher arquivo
+      </span>
+      <span className="truncate font-normal">{nome || 'Nenhum arquivo selecionado'}</span>
+    </span>
   )
 }
