@@ -63,3 +63,22 @@ export function situacaoVotacao(config, agora = Date.now()) {
   if (agora >= new Date(config.fim).getTime()) return 'encerrada'
   return 'aberta'
 }
+
+// "2020-03-10" (data de admissão) até a data de referência -> "6 Anos, 6 Meses e 15 Dias"
+export function tempoDeServico(admissao, referencia = new Date()) {
+  if (!admissao) return ''
+  const [ano, mes, dia] = admissao.split('-').map(Number)
+  let anos = referencia.getFullYear() - ano
+  let meses = referencia.getMonth() + 1 - mes
+  let dias = referencia.getDate() - dia
+  if (dias < 0) {
+    meses -= 1
+    // dias do mês anterior ao da referência
+    dias += new Date(referencia.getFullYear(), referencia.getMonth(), 0).getDate()
+  }
+  if (meses < 0) {
+    anos -= 1
+    meses += 12
+  }
+  return `${anos} ${anos > 1 ? 'Anos' : 'Ano'}, ${meses} ${meses === 1 ? 'Mês' : 'Meses'} e ${dias} ${dias === 1 ? 'Dia' : 'Dias'}`
+}

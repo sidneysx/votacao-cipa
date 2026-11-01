@@ -84,6 +84,84 @@
   .num {
     @apply text-right tabular-nums;
   }
+
+  /* Documentos para imprimir (atas, editais). Visual de papel, independente do tema. */
+  .documento {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 11.5pt;
+    line-height: 1.55;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .documento :where(h1) {
+    @apply mb-5 mt-6 text-center font-bold uppercase;
+    font-size: 13.5pt;
+  }
+  .documento :where(h2) {
+    @apply mb-1.5 mt-5 font-bold;
+    font-size: 12pt;
+  }
+  .documento :where(p) {
+    @apply mb-3 text-justify;
+  }
+  .documento :where(table) {
+    @apply mb-4 w-full border-collapse;
+    font-size: 10.5pt;
+  }
+  .documento :where(th),
+  .documento :where(td) {
+    @apply border border-slate-500 px-2 py-1 text-left align-top;
+  }
+  .documento :where(th) {
+    @apply bg-slate-100 font-semibold;
+  }
+  .documento :where(.num) {
+    @apply text-right;
+  }
+  .documento :where(tr) {
+    break-inside: avoid;
+  }
+
+  /* Na tela: uma folha A4 */
+  .folha {
+    @apply mx-auto bg-white shadow-md ring-1 ring-slate-200;
+    width: 21cm;
+    min-height: 29.7cm;
+    padding: 2cm;
+  }
+  .folha.paisagem {
+    width: 29.7cm;
+    min-height: 21cm;
+    padding: 1.2cm;
+  }
+  .area-impressao {
+    display: none;
+  }
+}
+
+/* Na impressão, só o documento aberto aparece */
+@media print {
+  @page {
+    size: A4;
+    margin: 1.8cm;
+  }
+  body:has(> .area-impressao) {
+    background: #fff;
+  }
+  body:has(> .area-impressao) > :not(.area-impressao) {
+    display: none !important;
+  }
+  .area-impressao {
+    display: block;
+  }
+  @page paisagem {
+    size: A4 landscape;
+    margin: 1cm;
+  }
+  .area-impressao.paisagem {
+    page: paisagem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

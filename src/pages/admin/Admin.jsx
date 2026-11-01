@@ -1,4 +1,4 @@
-import { Building2, ListChecks, LogOut, MonitorSmartphone, Settings, ShieldCheck, Trophy, Users } from 'lucide-react'
+import { Building2, FileText, ListChecks, LogOut, MonitorSmartphone, Settings, ShieldCheck, Trophy, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Cabecalho from '../../components/Cabecalho.jsx'
 import { Alerta, Carregando, IconeTopo, Palco } from '../../components/ui.jsx'
@@ -8,6 +8,7 @@ import Bases from './Bases.jsx'
 import Candidatos from './Candidatos.jsx'
 import Configuracoes from './Configuracoes.jsx'
 import Dispositivos from './Dispositivos.jsx'
+import Documentos from './Documentos.jsx'
 import Eleitores from './Eleitores.jsx'
 
 const ABAS = [
@@ -17,6 +18,7 @@ const ABAS = [
   { id: 'dispositivos', rotulo: 'Dispositivos', icone: MonitorSmartphone, Componente: Dispositivos },
   { id: 'eleitores', rotulo: 'Eleitores', icone: ListChecks, Componente: Eleitores },
   { id: 'resultado', rotulo: 'Resultado', icone: Trophy, Componente: PainelResultado },
+  { id: 'documentos', rotulo: 'Documentos', icone: FileText, Componente: Documentos },
 ]
 
 export default function Admin() {
