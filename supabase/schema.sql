@@ -74,6 +74,22 @@ create table votos (
   dispositivo_id uuid references dispositivos(id) on delete set null
 );
 
+-- Representantes indicados pelo empregador (aparecem na apuração).
+create table indicados (
+  id        uuid primary key default gen_random_uuid(),
+  nome      text not null,
+  status    text check (status in ('Titular', 'Suplente')),
+  gerencia  text,
+  curso     boolean,  -- fez o curso da CIPA? nulo = não informado
+  criado_em timestamptz not null default now()
+);
+
+-- Designado da CIPA em cada base (um por base).
+create table designados (
+  base_id uuid primary key references bases(id) on delete cascade,
+  nome    text not null
+);
+
 -- Usuários que podem entrar no painel.
 create table admins (
   user_id uuid primary key references auth.users(id) on delete cascade
@@ -95,6 +111,8 @@ alter table dispositivos enable row level security;
 alter table eleitores    enable row level security;
 alter table votos        enable row level security;
 alter table admins       enable row level security;
+alter table indicados    enable row level security;
+alter table designados   enable row level security;
 
 -- Qualquer um lê config e candidatos (a urna precisa mostrar).
 create policy config_leitura     on config     for select using (true);
@@ -102,10 +120,12 @@ create policy config_admin       on config     for update using (is_admin()) wit
 create policy candidatos_leitura on candidatos for select using (true);
 create policy candidatos_admin   on candidatos for all    using (is_admin()) with check (is_admin());
 
--- Só admin mexe em bases, dispositivos e eleitores.
+-- Só admin mexe em bases, dispositivos, eleitores, indicados e designados.
 create policy bases_admin        on bases        for all using (is_admin()) with check (is_admin());
 create policy dispositivos_admin on dispositivos for all using (is_admin()) with check (is_admin());
 create policy eleitores_admin    on eleitores    for all using (is_admin()) with check (is_admin());
+create policy indicados_admin    on indicados    for all using (is_admin()) with check (is_admin());
+create policy designados_admin   on designados   for all using (is_admin()) with check (is_admin());
 
 -- Cada usuário só consegue ver se ele mesmo é admin.
 create policy admins_proprio on admins for select using (user_id = auth.uid());
